@@ -65,10 +65,26 @@ app.post("/api/analyze", upload.single("document"), async (req, res) => {
     req.file.originalname
   );
 
-  const n8nResponse = await fetch(process.env.N8N_WEBHOOK_URL, {
-    method: "POST",
-    body: formData,
-  });
+  let n8nResponse;
+  try {
+    n8nResponse = await fetch(process.env.N8N_WEBHOOK_URL, {
+      method: "POST",
+      body: formData,
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch (erreur) {
+    return res.status(502).json({
+      erreur:
+        "Le service d'analyse est momentanément indisponible ou a mis trop de temps à répondre. Réessayez plus tard.",
+    });
+  }
+
+  if (!n8nResponse.ok) {
+    return res.status(502).json({
+      erreur: "Le service d'analyse a renvoyé une erreur. Réessayez plus tard.",
+    });
+  }
+
   const donnees = await n8nResponse.json();
 
   res.json(construireReponse(donnees));

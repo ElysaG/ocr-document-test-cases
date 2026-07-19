@@ -40,6 +40,7 @@ function App() {
   const [file, setFile] = useState(null)
   const [result, setResult] = useState(null)
   const [scenarioActif, setScenarioActif] = useState(null)
+  const [erreur, setErreur] = useState(null)
 
   useEffect(() => {
     fetch('http://localhost:3001/api/health')
@@ -54,6 +55,7 @@ function App() {
   }, [])
 
   const lancerScenario = async (id) => {
+    setErreur(null)
     const res = await fetch(`http://localhost:3001/api/scenario/${id}`)
     const data = await res.json()
     setScenarioActif(id)
@@ -64,16 +66,29 @@ function App() {
     event.preventDefault()
     if (!file) return
 
+    setErreur(null)
+    setResult(null)
+
     const formData = new FormData()
     formData.append('document', file)
 
-    const res = await fetch('http://localhost:3001/api/analyze', {
-      method: 'POST',
-      body: formData,
-    })
-    const data = await res.json()
-    setScenarioActif(null)
-    setResult(data)
+    try {
+      const res = await fetch('http://localhost:3001/api/analyze', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        setErreur(data.erreur ?? 'Une erreur est survenue.')
+        return
+      }
+
+      setScenarioActif(null)
+      setResult(data)
+    } catch {
+      setErreur('Impossible de contacter le serveur. Réessayez plus tard.')
+    }
   }
 
   const statutClasse = result?.statut ? result.statut.toLowerCase().replace(/_/g, '-') : ''
@@ -134,6 +149,7 @@ function App() {
             </label>
             <button type="submit" className="fichier-analyser">Analyser</button>
           </form>
+          {erreur && <p className="erreur">{erreur}</p>}
         </details>
 
         {result && (

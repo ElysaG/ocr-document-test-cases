@@ -228,6 +228,13 @@ h1 {
   border-color: var(--accent);
 }
 
+.erreur {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--danger);
+  text-align: center;
+}
+
 .comment-ca-marche {
   width: 100%;
   max-width: 640px;
