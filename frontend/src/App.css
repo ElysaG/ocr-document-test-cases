@@ -235,6 +235,16 @@ h1 {
   text-align: center;
 }
 
+.avertissement {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--warning);
+  background: var(--warning-bg);
+  border-radius: 6px;
+  text-align: center;
+}
+
 .comment-ca-marche {
   width: 100%;
   max-width: 640px;

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
 const LIBELLES_STATUT = {
   VALIDE: { label: 'Validé', className: 'badge-valide' },
   A_VERIFIER: { label: 'À vérifier', className: 'badge-a-verifier' },
@@ -23,7 +25,7 @@ const CATEGORIE_SCENARIO = {
 }
 
 const APERCU_SCENARIO = {
-  conforme: '/specimens/cni-recto-test.png',
+  conforme: '/specimens/cni-recto-test.jpg',
   qualite_degradee: '/specimens/cni-recto-test-floue.jpg',
   champ_manquant: '/specimens/cni-recto-test-50pmanquant.jpg',
   divergence_identite: '/specimens/cni-recto-test2.jpg',
@@ -43,12 +45,12 @@ function App() {
   const [erreur, setErreur] = useState(null)
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/health')
+    fetch(`${API_URL}/api/health`)
       .then((res) => res.json())
       .then((data) => setHealth(data))
       .catch(() => setHealth({ status: 'erreur' }))
 
-    fetch('http://localhost:3001/api/scenarios')
+    fetch(`${API_URL}/api/scenarios`)
       .then((res) => res.json())
       .then((data) => setScenarios(data))
       .catch(() => setScenarios([]))
@@ -56,7 +58,7 @@ function App() {
 
   const lancerScenario = async (id) => {
     setErreur(null)
-    const res = await fetch(`http://localhost:3001/api/scenario/${id}`)
+    const res = await fetch(`${API_URL}/api/scenario/${id}`)
     const data = await res.json()
     setScenarioActif(id)
     setResult(data)
@@ -73,7 +75,7 @@ function App() {
     formData.append('document', file)
 
     try {
-      const res = await fetch('http://localhost:3001/api/analyze', {
+      const res = await fetch(`${API_URL}/api/analyze`, {
         method: 'POST',
         body: formData,
       })
@@ -138,6 +140,11 @@ function App() {
 
         <details className="upload-libre">
           <summary>Tester avec votre propre document</summary>
+          <p className="avertissement">
+            ⚠️ N'utilisez jamais une vraie pièce d'identité. Testez uniquement avec un document
+            fictif ou un spécimen de démonstration — des exemplaires sont fournis dans le dossier{' '}
+            <code>frontend/public/specimens/</code> du dépôt GitHub.
+          </p>
           <form onSubmit={handleSubmit}>
             <label className="fichier-label">
               <input
