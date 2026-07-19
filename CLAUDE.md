@@ -32,6 +32,20 @@ Statuts métier : VALIDE, A_VERIFIER, REJETE, HORS_SUJET.
 - Tests : Jest sur les règles métier, introduits progressivement à la soirée 5. Je débute en tests, y aller doucement.
 - J'ai un workflow n8n existant (Appel-OCR4-Jalon Tests : Manual Trigger → Edit Fields → HTTP Request Mistral → Code Parsing → Code Règles métier). Le node HTTP Mistral et le parsing sont réutilisables. Le trigger devient un Webhook. Les règles métier migrent vers Express.
 
+## Stratégie de démonstration (portfolio)
+
+Le projet ne se limite pas à un pipeline OCR fonctionnel : l'objectif portfolio est de démontrer un système de **gouvernance documentaire** où extraction IA et décision métier sont volontairement séparées. Un recruteur passe 60 à 90 secondes sur un portfolio et ne fournira jamais ses propres documents de test — la démonstration doit donc être immédiate, sans préparation.
+
+- **Mode de démonstration principal : scénarios prédéfinis capturés.** Chaque scénario correspond à un document réellement passé une fois dans le pipeline ; la réponse Mistral (`donnees_extraites`, `confiance`, `traitement`) est capturée et rejouée à la demande — aucun appel réseau à n8n/Mistral au clic, donc aucune dépendance à l'infrastructure ni coût récurrent. Le moteur de règles (`evaluerStatut`) s'exécute toujours en direct sur la donnée rejouée : ce qui compte pour la démo (la décision et sa traçabilité) reste 100 % réel.
+- **Upload libre : mode secondaire**, toujours disponible, pour qui veut tester avec son propre document.
+- **5 scénarios cibles** : document conforme (VALIDE), prénom manquant/partiel (A_VERIFIER), qualité documentaire dégradée malgré une identité conforme (A_VERIFIER — démontre que la confiance seule ne valide ni ne rejette jamais rien), divergence d'identité (REJETE), document hors sujet (HORS_SUJET).
+- **HORS_SUJET est une simplification assumée du MVP**, à documenter explicitement dans le README (pas à cacher) : un système réel distinguerait "document hors périmètre" (facture, photo...) et "document inexploitable" (trop dégradé pour être lu), mais on ne dispose pas aujourd'hui d'un signal fiable pour les séparer proprement. Le MVP les regroupe sous un seul statut.
+- **L'enseignement sur les scores de confiance dépasse Mistral** : la littérature OCR/document-IA converge sur le même constat (signal utile, jamais suffisant seul pour décider). Le README et au moins un scénario doivent le présenter comme un enseignement général de gouvernance documentaire, pas comme une limite propre à un fournisseur.
+- **Les enseignements doivent être visibles dans l'application elle-même**, pas seulement dans le README (beaucoup de visiteurs ne le liront jamais) :
+  - un bandeau d'introduction permanent (séparation extraction/décision, en une phrase) ;
+  - un encart pédagogique contextuel, différent pour chaque scénario, affiché à côté du résultat au moment où il se produit — transforme chaque scénario en enseignement concret, pas en simple cas de test ;
+  - un accordéon "Comment ça marche ?", replié par défaut, pour qui veut aller plus loin.
+
 ## Plan de réalisation (soirées d'environ 2h)
 
 1. Squelette : Vite + React, Express, GET /api/health, le front affiche la réponse du back.
@@ -40,8 +54,8 @@ Statuts métier : VALIDE, A_VERIFIER, REJETE, HORS_SUJET.
 4. Chaîne complète sur un document net : upload → statut affiché.
 5. Référentiel mock + moteur de règles + statuts dans Express, premiers tests Jest.
 6. UI de résultats : extraction vs référence, badge statut, explication.
-7. Cas dégradés : flou, hors sujet, erreurs Mistral, timeouts.
-8. Finitions : README, schéma d'architecture, jeu de spécimens, vidéo de démo.
+7. Scénarios de démonstration capturés (5 cas, cf. Stratégie de démonstration) + statut HORS_SUJET + robustesse technique (timeout/erreur n8n) sur le chemin d'upload libre.
+8. Finitions : README (format Problème → Solution → Impact + section Enseignements), schéma d'architecture, bandeau/encarts pédagogiques et accordéon "Comment ça marche ?" dans l'UI, vidéo de démo.
 
 Chaque soirée se termine par un livrable qui fonctionne. Si ça déborde, on coupe le périmètre, pas la vérification.
 
