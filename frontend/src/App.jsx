@@ -14,6 +14,21 @@ const CHAMPS_COMPARES = [
   { cle: 'date_naissance', label: 'Date de naissance' },
 ]
 
+const CATEGORIE_SCENARIO = {
+  conforme: 'success',
+  qualite_degradee: 'warning',
+  champ_manquant: 'warning',
+  divergence_identite: 'danger',
+  hors_sujet: 'neutral',
+}
+
+const APERCU_SCENARIO = {
+  conforme: '/specimens/cni-recto-test.png',
+  qualite_degradee: '/specimens/cni-recto-test-floue.jpg',
+  champ_manquant: '/specimens/cni-recto-test-50pmanquant.jpg',
+  divergence_identite: '/specimens/cni-recto-test2.jpg',
+}
+
 function StatutBadge({ statut }) {
   const config = LIBELLES_STATUT[statut] ?? { label: statut, className: '' }
   return <span className={`badge ${config.className}`}>{config.label}</span>
@@ -24,6 +39,7 @@ function App() {
   const [scenarios, setScenarios] = useState([])
   const [file, setFile] = useState(null)
   const [result, setResult] = useState(null)
+  const [scenarioActif, setScenarioActif] = useState(null)
 
   useEffect(() => {
     fetch('http://localhost:3001/api/health')
@@ -40,6 +56,7 @@ function App() {
   const lancerScenario = async (id) => {
     const res = await fetch(`http://localhost:3001/api/scenario/${id}`)
     const data = await res.json()
+    setScenarioActif(id)
     setResult(data)
   }
 
@@ -55,10 +72,12 @@ function App() {
       body: formData,
     })
     const data = await res.json()
+    setScenarioActif(null)
     setResult(data)
   }
 
   const statutClasse = result?.statut ? result.statut.toLowerCase().replace(/_/g, '-') : ''
+  const apercu = APERCU_SCENARIO[scenarioActif]
 
   return (
     <>
@@ -70,6 +89,7 @@ function App() {
       </header>
 
       <section id="center">
+        <p className="kicker">Portfolio — cheffe de projet IA</p>
         <h1>Contrôle documentaire assisté par IA</h1>
 
         <p className="bandeau-intro">
@@ -78,18 +98,23 @@ function App() {
         </p>
 
         <div className="scenarios">
-          <h2>Scénarios de démonstration</h2>
+          <p className="scenarios-eyebrow">Mode de démonstration</p>
+          <h2>Scénarios réels capturés</h2>
           <p className="scenarios-sub">
-            Choisissez un scénario pour lancer l'analyse — aucun fichier à préparer.
+            Chaque bouton rejoue une vraie réponse Mistral OCR, déjà capturée — aucun fichier à préparer.
           </p>
           <div className="scenarios-boutons">
             {scenarios.map((scenario) => (
               <button
                 key={scenario.id}
                 type="button"
-                className="scenario-bouton"
+                className={`scenario-bouton ${scenarioActif === scenario.id ? 'is-actif' : ''}`}
                 onClick={() => lancerScenario(scenario.id)}
               >
+                <span
+                  className={`scenario-puce puce-${CATEGORIE_SCENARIO[scenario.id] ?? 'neutral'}`}
+                  aria-hidden="true"
+                ></span>
                 {scenario.label}
               </button>
             ))}
@@ -99,11 +124,15 @@ function App() {
         <details className="upload-libre">
           <summary>Tester avec votre propre document</summary>
           <form onSubmit={handleSubmit}>
-            <input
-              type="file"
-              onChange={(event) => setFile(event.target.files[0])}
-            />
-            <button type="submit">Analyser</button>
+            <label className="fichier-label">
+              <input
+                type="file"
+                className="fichier-input"
+                onChange={(event) => setFile(event.target.files[0])}
+              />
+              <span>{file ? file.name : 'Choisir un fichier'}</span>
+            </label>
+            <button type="submit" className="fichier-analyser">Analyser</button>
           </form>
         </details>
 
@@ -114,35 +143,48 @@ function App() {
               <StatutBadge statut={result.statut} />
             </div>
 
-            <table className="comparaison">
-              <thead>
-                <tr>
-                  <th>Champ</th>
-                  <th>Extrait du document</th>
-                  <th>Référence attendue</th>
-                </tr>
-              </thead>
-              <tbody>
-                {CHAMPS_COMPARES.map(({ cle, label }) => (
-                  <tr key={cle}>
-                    <td>{label}</td>
-                    <td>{result.donnees_extraites?.[cle] || '—'}</td>
-                    <td>{result.referentiel?.[cle] || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="resultat-corps">
+              {apercu && (
+                <img
+                  className="resultat-apercu"
+                  src={apercu}
+                  alt="Aperçu du document analysé"
+                  loading="lazy"
+                />
+              )}
 
-            {result.motifsLisibles?.length > 0 && (
-              <div className="motifs">
-                <h3>Pourquoi ce statut ?</h3>
-                <ul>
-                  {result.motifsLisibles.map((motif) => (
-                    <li key={motif}>{motif}</li>
-                  ))}
-                </ul>
+              <div className="resultat-donnees">
+                <table className="comparaison">
+                  <thead>
+                    <tr>
+                      <th>Champ</th>
+                      <th>Extrait du document</th>
+                      <th>Référence attendue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {CHAMPS_COMPARES.map(({ cle, label }) => (
+                      <tr key={cle}>
+                        <td>{label}</td>
+                        <td>{result.donnees_extraites?.[cle] || '—'}</td>
+                        <td>{result.referentiel?.[cle] || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {result.motifsLisibles?.length > 0 && (
+                  <div className="motifs">
+                    <h3>Pourquoi ce statut ?</h3>
+                    <ul>
+                      {result.motifsLisibles.map((motif) => (
+                        <li key={motif}>{motif}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             {result.enseignement && (
               <div className="enseignement">
