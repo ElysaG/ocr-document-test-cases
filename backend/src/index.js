@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import multer from "multer";
 import "dotenv/config";
+import { evaluerStatut } from "./rules/evaluerStatut.js";
+import referentiel from "./data/referentiel.json" with { type: "json" };
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -31,7 +33,13 @@ app.post("/api/analyze", upload.single("document"), async (req, res) => {
   });
   const donnees = await n8nResponse.json();
 
-  res.json(donnees);
+  const { statut, motifs } = evaluerStatut({
+    extraction: donnees.donnees_extraites,
+    confiance: donnees.confiance,
+    reference: referentiel,
+  });
+
+  res.json({ ...donnees, statut, motifs });
 });
 
 app.listen(PORT, () => {
