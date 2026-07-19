@@ -1,20 +1,20 @@
 import { evaluerStatut } from "./evaluerStatut.js";
 
 const reference = {
-  nom: "DUPONT",
-  prenoms: "LUCAS, PIERRE",
-  date_naissance: "1987-11-23",
-  nom_usage: "DUPONT",
+  nom: "MARTIN",
+  prenoms: "ÉLISE, CAMILLE",
+  date_naissance: "1992-05-12",
+  nom_usage: "MARTIN",
 };
 
 test("identité conforme et bonne qualité => VALIDE", () => {
   const extraction = {
-    nom: "dupont",
-    prenoms: "LUCAS, PIERRE",
-    date_naissance: "1987-11-23",
-    nom_usage: "DUPONT",
+    nom: "martin",
+    prenoms: "ÉLISE, CAMILLE",
+    date_naissance: "1992-05-12",
+    nom_usage: "MARTIN",
   };
-  const confiance = { moyenne_page: 0.95, minimum_page: 0.9 };
+  const confiance = { moyenne_page: 0.95, minimum_page: 0.2 };
 
   const resultat = evaluerStatut({ extraction, confiance, reference });
 
@@ -22,22 +22,14 @@ test("identité conforme et bonne qualité => VALIDE", () => {
   expect(resultat.motifs).toEqual([]);
 });
 
-// À toi d'écrire les cas suivants, sur le même modèle :
-//
-// test("nom différent du référentiel => REJETE", () => { ... })
-//   -> extraction.nom = "MARTIN" par exemple, tout le reste identique à reference
-//   -> vérifie resultat.statut === "REJETE"
-//   -> vérifie que resultat.motifs contient quelque chose comme "IDENTITE_DIVERGENTE:nom"
-//
-
 test("nom différent du référentiel => REJETE", () => {
   const extraction = {
     nom: "AUTRE",
-    prenoms: "LUCAS, PIERRE",
-    date_naissance: "1987-11-23",
-    nom_usage: "DUPONT",
+    prenoms: "ÉLISE, CAMILLE",
+    date_naissance: "1992-05-12",
+    nom_usage: "MARTIN",
   };
-  const confiance = { moyenne_page: 0.95, minimum_page: 0.9 };
+  const confiance = { moyenne_page: 0.95, minimum_page: 0.2 };
 
   const resultat = evaluerStatut({ extraction, confiance, reference });
 
@@ -45,20 +37,14 @@ test("nom différent du référentiel => REJETE", () => {
   expect(resultat.motifs).toContain("IDENTITE_DIVERGENTE:nom");
 });
 
-
-// test("date_naissance manquante => A_VERIFIER", () => { ... })
-//   -> extraction.date_naissance = "" ou null, nom/prenoms conformes
-//   -> vérifie resultat.statut === "A_VERIFIER"
-//   -> vérifie que resultat.motifs contient "CHAMP_MANQUANT:date_naissance"
-//
 test("date_naissance manquante => A_VERIFIER", () => {
   const extraction = {
-    nom: "dupont",
-    prenoms: "LUCAS, PIERRE",
+    nom: "martin",
+    prenoms: "ÉLISE, CAMILLE",
     date_naissance: "",
-    nom_usage: "DUPONT",
+    nom_usage: "MARTIN",
   };
-  const confiance = { moyenne_page: 0.95, minimum_page: 0.9 };
+  const confiance = { moyenne_page: 0.95, minimum_page: 0.2 };
 
   const resultat = evaluerStatut({ extraction, confiance, reference });
 
@@ -66,22 +52,14 @@ test("date_naissance manquante => A_VERIFIER", () => {
   expect(resultat.motifs).toContain("CHAMP_MANQUANT:date_naissance");
 });
 
-
-
-
-
-// test("confiance faible mais identité conforme => A_VERIFIER", () => { ... })
-//   -> confiance.moyenne_page = 0.4, extraction identique à reference
-//   -> vérifie resultat.statut === "A_VERIFIER"
-//   -> vérifie que resultat.motifs contient "QUALITE_DOCUMENTAIRE_FAIBLE"
 test("confiance faible mais identité conforme => A_VERIFIER", () => {
   const extraction = {
-    nom: "dupont",
-    prenoms: "LUCAS, PIERRE",
-    date_naissance: "1987-11-23",
-    nom_usage: "DUPONT",
+    nom: "martin",
+    prenoms: "ÉLISE, CAMILLE",
+    date_naissance: "1992-05-12",
+    nom_usage: "MARTIN",
   };
-  const confiance = { moyenne_page: 0.4, minimum_page: 0.9 };
+  const confiance = { moyenne_page: 0.4, minimum_page: 0.2 };
 
   const resultat = evaluerStatut({ extraction, confiance, reference });
 
@@ -89,14 +67,29 @@ test("confiance faible mais identité conforme => A_VERIFIER", () => {
   expect(resultat.motifs).toContain("QUALITE_DOCUMENTAIRE_FAIBLE");
 });
 
+test("aucun champ d'identité exploitable => HORS_SUJET", () => {
+  const extraction = {
+    nom: "",
+    prenoms: "",
+    date_naissance: "",
+    nom_usage: "",
+  };
+  const confiance = { moyenne_page: 0.95, minimum_page: 0.2 };
+
+  const resultat = evaluerStatut({ extraction, confiance, reference });
+
+  expect(resultat.statut).toBe("HORS_SUJET");
+  expect(resultat.motifs).toEqual(["DOCUMENT_NON_RECONNU"]);
+});
+
 test("prénoms séparés par un espace (sans virgule) => VALIDE", () => {
   const extraction = {
-    nom: "dupont",
-    prenoms: "LUCAS PIERRE",
-    date_naissance: "1987-11-23",
-    nom_usage: "DUPONT",
+    nom: "martin",
+    prenoms: "CAMILLE ÉLISE",
+    date_naissance: "1992-05-12",
+    nom_usage: "MARTIN",
   };
-  const confiance = { moyenne_page: 0.95, minimum_page: 0.9 };
+  const confiance = { moyenne_page: 0.95, minimum_page: 0.2 };
 
   const resultat = evaluerStatut({ extraction, confiance, reference });
 

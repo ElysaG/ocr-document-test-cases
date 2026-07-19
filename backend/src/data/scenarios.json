@@ -1,0 +1,102 @@
+[
+  {
+    "id": "conforme",
+    "label": "Document conforme",
+    "donnees_extraites": {
+      "nom": "MARTIN",
+      "prenoms": "ÉLISE, CAMILLE",
+      "date_naissance": "1992-05-12",
+      "nom_usage": "MARTIN"
+    },
+    "confiance": {
+      "moyenne_page": 0.9563640700847683,
+      "minimum_page": 0.205396817698279
+    },
+    "traitement": {
+      "modele": "mistral-ocr-latest",
+      "pages_traitees": 1,
+      "traite_le": "2026-07-19T16:25:03.000Z"
+    },
+    "enseignement": "L'identité extraite correspond au référentiel et la qualité documentaire est suffisante : la décision VALIDE est entièrement automatisée, sans intervention humaine."
+  },
+  {
+    "id": "qualite_degradee",
+    "label": "Qualité documentaire dégradée",
+    "donnees_extraites": {
+      "nom": "MARTIN",
+      "prenoms": "CAMILLE ÉLISE",
+      "date_naissance": "1992-05-12",
+      "nom_usage": ""
+    },
+    "confiance": {
+      "moyenne_page": 0.8994821704478202,
+      "minimum_page": 0.03486855220162448
+    },
+    "traitement": {
+      "modele": "mistral-ocr-latest",
+      "pages_traitees": 1,
+      "traite_le": "2026-07-19T16:25:07.000Z"
+    },
+    "enseignement": "L'identité extraite correspond pourtant au référentiel : c'est uniquement la qualité du document qui déclenche un contrôle humain. Un score de confiance OCR n'est jamais, à lui seul, un critère de validation ou de rejet."
+  },
+  {
+    "id": "champ_manquant",
+    "label": "Champ obligatoire manquant",
+    "donnees_extraites": {
+      "nom": "MARTIN",
+      "prenoms": "ÉLISE, CAMILLE",
+      "date_naissance": "",
+      "nom_usage": "MARTIN"
+    },
+    "confiance": {
+      "moyenne_page": 0.9624916018317098,
+      "minimum_page": 0.22917672843139192
+    },
+    "traitement": {
+      "modele": "mistral-ocr-latest",
+      "pages_traitees": 1,
+      "traite_le": "2026-07-19T16:25:12.000Z"
+    },
+    "enseignement": "La date de naissance n'a pas pu être extraite du document : plutôt que de valider ou rejeter par défaut, le système oriente vers un contrôle humain."
+  },
+  {
+    "id": "divergence_identite",
+    "label": "Divergence d'identité",
+    "donnees_extraites": {
+      "nom": "DUPONT",
+      "prenoms": "LUCAS PIERRE",
+      "date_naissance": "1987-11-23",
+      "nom_usage": "DUPONT"
+    },
+    "confiance": {
+      "moyenne_page": 0.947949029343548,
+      "minimum_page": 0.1134738093034542
+    },
+    "traitement": {
+      "modele": "mistral-ocr-latest",
+      "pages_traitees": 1,
+      "traite_le": "2026-07-19T15:03:48.886Z"
+    },
+    "enseignement": "Le nom, les prénoms et la date de naissance extraits ne correspondent pas au référentiel : la décision REJETE est justifiée par des motifs explicites et vérifiables, jamais par un simple score."
+  },
+  {
+    "id": "hors_sujet",
+    "label": "Document hors sujet",
+    "donnees_extraites": {
+      "nom": "",
+      "prenoms": "",
+      "date_naissance": "",
+      "nom_usage": ""
+    },
+    "confiance": {
+      "moyenne_page": 0.9638987193932137,
+      "minimum_page": 0.17085907999716013
+    },
+    "traitement": {
+      "modele": "mistral-ocr-latest",
+      "pages_traitees": 1,
+      "traite_le": "2026-07-19T16:25:20.000Z"
+    },
+    "enseignement": "Le document ne contient aucune information exploitable : le système ne force pas une décision d'identité sur un document qui n'en est manifestement pas une."
+  }
+]

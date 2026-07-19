@@ -14,6 +14,8 @@ const LIBELLES = {
     "Les prénoms indiqués sur le document ne correspondent pas à ceux attendus.",
   QUALITE_DOCUMENTAIRE_FAIBLE:
     "La qualité du document ne permet pas de garantir une lecture fiable.",
+  DOCUMENT_NON_RECONNU:
+    "Le document ne semble pas correspondre au type de pièce attendu (aucune information exploitable).",
 };
 
 export function traduireMotifs(motifs) {

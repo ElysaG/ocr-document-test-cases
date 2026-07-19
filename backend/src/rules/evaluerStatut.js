@@ -1,6 +1,14 @@
-// Seuil arbitraire pour ce MVP portfolio : la confiance OCR seule ne décide
-// jamais du statut, elle ne fait qu'ajouter un motif de qualité documentaire.
-const SEUIL_CONFIANCE = 0.7;
+// Seuil calibré empiriquement sur des spécimens réels (voir captures OCR
+// soirée 7) : moyenne_page < 0.92 sépare les documents visiblement dégradés
+// (flou, mauvaise résolution, rotation) des documents nets dans notre
+// échantillon. minimum_page a été testé et écarté : il reste bas (< 0.25)
+// même sur des documents parfaitement lisibles (une zone isolée du
+// document, ex. micro-impression, suffit à le faire chuter) — un signal
+// trop bruité pour être exploitable. Reste un paramètre arbitraire au sens
+// où il n'est validé que sur un petit échantillon, pas une vérité générale ;
+// la confiance OCR ne décide jamais seule du statut, elle ne fait qu'ajouter
+// un motif de qualité documentaire.
+const SEUIL_CONFIANCE = 0.92;
 
 function normaliser(texte) {
   // TODO: retourner texte "nettoyé" pour comparaison (trim + majuscules),
@@ -58,6 +66,16 @@ function comparerPrenoms(prenomsExtraits, prenomsReference) {
 }
 
 export function evaluerStatut({ extraction, confiance, reference }) {
+  // 0. Document non reconnu : aucun champ d'identité exploitable.
+  // Simplification MVP assumée (cf. CLAUDE.md, "Stratégie de démonstration") :
+  // regroupe "hors périmètre" et "inexploitable", faute de signal pour distinguer les deux.
+  const aucunChampExploitable = ["nom", "prenoms", "date_naissance"].every(
+    (champ) => champEstManquant(extraction[champ])
+  );
+  if (aucunChampExploitable) {
+    return { statut: "HORS_SUJET", motifs: ["DOCUMENT_NON_RECONNU"] };
+  }
+
   const motifs = [];
 
   // 1. Champs d'identité forte : nom, date_naissance

@@ -5,6 +5,7 @@ import "dotenv/config";
 import { evaluerStatut } from "./rules/evaluerStatut.js";
 import { traduireMotifs } from "./rules/motifsLisibles.js";
 import referentiel from "./data/referentiel.json" with { type: "json" };
+import scenarios from "./data/scenarios.json" with { type: "json" };
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -12,8 +13,44 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 
+function construireReponse({ donnees_extraites, confiance, traitement }) {
+  const { statut, motifs } = evaluerStatut({
+    extraction: donnees_extraites,
+    confiance,
+    reference: referentiel,
+  });
+
+  return {
+    donnees_extraites,
+    confiance,
+    traitement,
+    statut,
+    motifs,
+    motifsLisibles: traduireMotifs(motifs),
+    referentiel,
+  };
+}
+
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
+});
+
+app.get("/api/scenarios", (req, res) => {
+  res.json(
+    scenarios.map(({ id, label, enseignement }) => ({ id, label, enseignement }))
+  );
+});
+
+app.get("/api/scenario/:id", (req, res) => {
+  const scenario = scenarios.find((s) => s.id === req.params.id);
+  if (!scenario) {
+    return res.status(404).json({ erreur: "Scénario introuvable" });
+  }
+
+  res.json({
+    ...construireReponse(scenario),
+    enseignement: scenario.enseignement,
+  });
 });
 
 app.post("/api/analyze", upload.single("document"), async (req, res) => {
@@ -34,19 +71,7 @@ app.post("/api/analyze", upload.single("document"), async (req, res) => {
   });
   const donnees = await n8nResponse.json();
 
-  const { statut, motifs } = evaluerStatut({
-    extraction: donnees.donnees_extraites,
-    confiance: donnees.confiance,
-    reference: referentiel,
-  });
-
-  res.json({
-    ...donnees,
-    statut,
-    motifs,
-    motifsLisibles: traduireMotifs(motifs),
-    referentiel,
-  });
+  res.json(construireReponse(donnees));
 });
 
 app.listen(PORT, () => {
