@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import multer from "multer";
+import "dotenv/config";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -12,19 +13,25 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.post("/api/analyze", upload.single("document"), (req, res) => {
+app.post("/api/analyze", upload.single("document"), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ erreur: "Aucun fichier reçu" });
   }
 
-  res.json({
-    fichier: {
-      nom: req.file.originalname,
-      taille: req.file.size,
-    },
-    statut: "A_VERIFIER",
-    explication: "Réponse mockée : le moteur de règles arrive à la soirée 5.",
+  const formData = new FormData();
+  formData.append(
+    "document",
+    new Blob([req.file.buffer], { type: req.file.mimetype }),
+    req.file.originalname
+  );
+
+  const n8nResponse = await fetch(process.env.N8N_WEBHOOK_URL, {
+    method: "POST",
+    body: formData,
   });
+  const donnees = await n8nResponse.json();
+
+  res.json(donnees);
 });
 
 app.listen(PORT, () => {
