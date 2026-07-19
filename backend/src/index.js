@@ -3,6 +3,7 @@ import cors from "cors";
 import multer from "multer";
 import "dotenv/config";
 import { evaluerStatut } from "./rules/evaluerStatut.js";
+import { traduireMotifs } from "./rules/motifsLisibles.js";
 import referentiel from "./data/referentiel.json" with { type: "json" };
 
 const app = express();
@@ -39,7 +40,13 @@ app.post("/api/analyze", upload.single("document"), async (req, res) => {
     reference: referentiel,
   });
 
-  res.json({ ...donnees, statut, motifs });
+  res.json({
+    ...donnees,
+    statut,
+    motifs,
+    motifsLisibles: traduireMotifs(motifs),
+    referentiel,
+  });
 });
 
 app.listen(PORT, () => {
