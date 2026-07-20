@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-const GITHUB_URL = 'https://github.com/ElysaG/Test-OCR-portfolio'
+const GITHUB_URL = 'https://github.com/ElysaG/ocr-document-test-cases'
 const LINKEDIN_URL = 'https://www.linkedin.com/in/elisa-gomez-IA'
 
 const LIBELLES_STATUT = {
@@ -167,7 +167,7 @@ function App() {
       </header>
 
       <section id="center">
-        <p className="kicker">Portfolio — cheffe de projet IA</p>
+        <p className="kicker">PROJET D’EXPLORATION • IA & DÉCISION MÉTIER</p>
         <h1>Contrôle documentaire assisté par IA</h1>
         <p className="sous-titre">De l'extraction IA à la décision métier explicable</p>
 
