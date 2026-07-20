@@ -9,8 +9,7 @@ Ce n'est pas une démo OCR. C'est une démonstration de séparation entre extrac
 
 ![Capture de l'application](./docs/screenshot.png) 
 
-🔗 **Démo en ligne** : [à compléter]
-🎥 **Vidéo de démonstration (90s)** : [à compléter]
+🔗 **Démo en ligne** : [\[(https://ocr-tests-frontend.onrender.com/)\]]
 
 L'application est conçue pour se comprendre seule, en moins de deux minutes, sans lecture préalable : un bandeau d'introduction, un encart pédagogique propre à chaque scénario, et un accordéon "Comment ça marche ?" pour qui veut aller plus loin. Ce README complète la démo, il n'est pas nécessaire pour la comprendre.
 
