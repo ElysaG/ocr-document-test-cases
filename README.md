@@ -16,9 +16,9 @@ L'application est conçue pour se comprendre seule, en moins de deux minutes, sa
 
 ## Le problème
 
-L'OCR peut halluciner des valeurs plausibles. Un score de confiance élevé ne garantit rien — deux constats issus de mes propres tests, confirmés par la littérature OCR/document-IA.
+L'OCR peut halluciner des valeurs plausibles mais fausses. Un score de confiance élevé ne garantit rien — deux constats issus de mes propres tests, confirmés par la littérature OCR/document-IA.
 
-Un système qui déciderait sur la seule extraction, ou le seul score, finit tôt ou tard par valider un document faux avec assurance, ou rejeter un document valide sur un score non pertinent.
+C'est pour cette raison que l'extraction n'est jamais prise pour argent comptant : un système qui déciderait sur la seule extraction, ou le seul score, finit tôt ou tard par valider un document faux avec assurance, ou rejeter un document valide sur un score non pertinent. Les données OCR ne remplacent donc jamais le référentiel — elles sont comparées à lui, jamais prises pour vraies par défaut.
 
 La question posée ici : comment utiliser l'IA pour ce qu'elle fait bien — lire un document — sans jamais lui laisser la décision métier ?
 

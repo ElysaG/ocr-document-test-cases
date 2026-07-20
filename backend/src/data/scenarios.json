@@ -97,6 +97,6 @@
       "pages_traitees": 1,
       "traite_le": "2026-07-19T16:25:20.000Z"
     },
-    "enseignement": "Le document ne contient aucune information exploitable : le système ne force pas une décision d'identité sur un document qui n'en est manifestement pas une."
+    "enseignement": "Aucun élément d'identité exploitable n'a été détecté. Le système préfère s'abstenir plutôt que produire une décision peu fiable."
   }
 ]
