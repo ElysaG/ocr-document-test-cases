@@ -4,12 +4,51 @@
   align-items: center;
   gap: 40px;
   flex-grow: 1;
-  padding: 48px 24px 64px;
+  padding: 24px 24px 64px;
 
   @media (max-width: 1024px) {
-    padding: 32px 20px 40px;
+    padding: 16px 20px 40px;
     gap: 28px;
   }
+}
+
+.topbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 24px 0;
+}
+
+.statut-backend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.statut-backend .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.statut-backend.etat-connexion .dot {
+  background: var(--warning);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.statut-backend.etat-pret .dot {
+  background: var(--success);
+}
+
+.statut-backend.etat-indisponible .dot {
+  background: var(--danger);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
 }
 
 .kicker {
@@ -178,6 +217,21 @@ h1 {
   margin-bottom: 20px;
 }
 
+.backend-attente {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--warning);
+  background: var(--warning-bg);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: -8px 0 20px;
+}
+
+.backend-attente-erreur {
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
 .scenarios-boutons {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -226,6 +280,22 @@ h1 {
   border: 2px solid var(--accent);
   background: var(--accent-bg);
   padding: 13px 15px;
+}
+
+.scenario-bouton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  background: var(--bg);
+}
+
+.scenario-bouton:disabled:hover {
+  border-color: var(--border);
+  box-shadow: none;
+  transform: none;
+}
+
+.scenario-bouton:disabled::after {
+  color: var(--border);
 }
 
 .scenario-recommande {

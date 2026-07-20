@@ -58,6 +58,12 @@ const ENSEIGNEMENTS = [
   "L'explicabilité est une exigence métier, pas un confort technique.",
 ]
 
+const ETAT_BACKEND_LABEL = {
+  connexion: 'Connexion en cours…',
+  pret: 'Backend prêt',
+  indisponible: 'Backend indisponible',
+}
+
 function StatutBadge({ statut }) {
   const config = LIBELLES_STATUT[statut] ?? { label: statut, className: '' }
   return <span className={`badge ${config.className}`}>{config.label}</span>
@@ -88,20 +94,35 @@ function App() {
   const [result, setResult] = useState(null)
   const [scenarioActif, setScenarioActif] = useState(null)
   const [erreur, setErreur] = useState(null)
+  const [etatBackend, setEtatBackend] = useState('connexion')
 
   useEffect(() => {
     fetch(`${API_URL}/api/scenarios`)
       .then((res) => res.json())
       .then((data) => setScenarios(data))
       .catch(() => setScenarios([]))
+
+    fetch(`${API_URL}/api/health`, { signal: AbortSignal.timeout(75000) })
+      .then((res) => setEtatBackend(res.ok ? 'pret' : 'indisponible'))
+      .catch(() => setEtatBackend('indisponible'))
   }, [])
 
   const lancerScenario = async (id) => {
     setErreur(null)
-    const res = await fetch(`${API_URL}/api/scenario/${id}`)
-    const data = await res.json()
-    setScenarioActif(id)
-    setResult(data)
+    try {
+      const res = await fetch(`${API_URL}/api/scenario/${id}`)
+      const data = await res.json()
+
+      if (!res.ok) {
+        setErreur(data.erreur ?? 'Une erreur est survenue.')
+        return
+      }
+
+      setScenarioActif(id)
+      setResult(data)
+    } catch {
+      setErreur('Impossible de contacter le serveur. Réessayez plus tard.')
+    }
   }
 
   const handleSubmit = async (event) => {
@@ -137,185 +158,206 @@ function App() {
   const apercu = APERCU_SCENARIO[scenarioActif]
 
   return (
-    <section id="center">
-      <p className="kicker">Portfolio — cheffe de projet IA</p>
-      <h1>Contrôle documentaire assisté par IA</h1>
-      <p className="sous-titre">De l'extraction IA à la décision métier explicable</p>
+    <>
+      <header className="topbar">
+        <span className={`statut-backend etat-${etatBackend}`}>
+          <span className="dot" aria-hidden="true"></span>
+          {ETAT_BACKEND_LABEL[etatBackend]}
+        </span>
+      </header>
 
-      <div className="pourquoi">
-        <p className="section-eyebrow">Le problème</p>
-        <p className="pourquoi-texte">
-          Lors d'un contrôle documentaire, valider une mauvaise identité ou rejeter un document
-          valide a un <strong>coût opérationnel réel</strong>.
-        </p>
-        <p className="pourquoi-texte">
-          Or, un OCR peut extraire une information <strong>erronée mais plausible</strong>,
-          parfois accompagnée d'un score de confiance élevé. L'extraction ne peut donc{' '}
-          <strong>jamais être considérée comme une vérité</strong>.
-        </p>
-        <p className="pourquoi-texte">
-          Dans ce projet, l'IA extrait l'information mais{' '}
-          <strong>ne remplace jamais le référentiel de référence</strong>. Un moteur de règles
-          explicables compare les deux sources et justifie chaque décision.
-        </p>
-      </div>
+      <section id="center">
+        <p className="kicker">Portfolio — cheffe de projet IA</p>
+        <h1>Contrôle documentaire assisté par IA</h1>
+        <p className="sous-titre">De l'extraction IA à la décision métier explicable</p>
 
-      <div className="comment-ca-marche">
-        <p className="section-eyebrow">Comment ça marche</p>
-        <h2>De l'extraction à la décision</h2>
-        <Pipeline />
-      </div>
-
-      <div className="scenarios">
-        <p className="section-eyebrow">Mode de démonstration</p>
-        <h2>Scénarios réels capturés</h2>
-        <p className="scenarios-sub">
-          Chaque carte rejoue une vraie réponse Mistral OCR, déjà capturée — aucun fichier à préparer.
-        </p>
-        <div className="scenarios-boutons">
-          {scenarios.map((scenario) => (
-            <button
-              key={scenario.id}
-              type="button"
-              className={`scenario-bouton ${scenarioActif === scenario.id ? 'is-actif' : ''}`}
-              onClick={() => lancerScenario(scenario.id)}
-            >
-              {scenarioActif === scenario.id && (
-                <span className="scenario-check" aria-hidden="true">✓</span>
-              )}
-              {scenario.id === SCENARIO_RECOMMANDE && (
-                <span className="scenario-recommande">Commencer ici</span>
-              )}
-              <span
-                className={`scenario-puce puce-${CATEGORIE_SCENARIO[scenario.id] ?? 'neutral'}`}
-                aria-hidden="true"
-              ></span>
-              <span className="scenario-texte">
-                <span className="scenario-label">{scenario.label}</span>
-                <span className="scenario-desc">{DESCRIPTION_SCENARIO[scenario.id]}</span>
-              </span>
-            </button>
-          ))}
+        <div className="pourquoi">
+          <p className="section-eyebrow">Le problème</p>
+          <p className="pourquoi-texte">
+            Lors d'un contrôle documentaire, valider une mauvaise identité ou rejeter un document
+            valide a un <strong>coût opérationnel réel</strong>.
+          </p>
+          <p className="pourquoi-texte">
+            Or, un OCR peut extraire une information <strong>erronée mais plausible</strong>,
+            parfois accompagnée d'un score de confiance élevé. L'extraction ne peut donc{' '}
+            <strong>jamais être considérée comme une vérité</strong>.
+          </p>
+          <p className="pourquoi-texte">
+            Dans ce projet, l'IA extrait l'information mais{' '}
+            <strong>ne remplace jamais le référentiel de référence</strong>. Un moteur de règles
+            explicables compare les deux sources et justifie chaque décision.
+          </p>
         </div>
-      </div>
 
-      {result && (
-        <div className={`resultat statut-${statutClasse}`}>
-          <div className="resultat-etape resultat-verdict">
-            <p className="section-eyebrow">01 — Verdict</p>
-            <StatutBadge statut={result.statut} />
-          </div>
+        <div className="comment-ca-marche">
+          <p className="section-eyebrow">Comment ça marche</p>
+          <h2>De l'extraction à la décision</h2>
+          <Pipeline />
+        </div>
 
-          {result.enseignement && (
-            <div className="resultat-etape resultat-pourquoi">
-              <p className="section-eyebrow">02 — Pourquoi</p>
-              <p className="verdict-texte">{result.enseignement}</p>
-            </div>
+        <div className="scenarios">
+          <p className="section-eyebrow">Mode de démonstration</p>
+          <h2>Scénarios réels capturés</h2>
+          <p className="scenarios-sub">
+            Chaque carte rejoue une vraie réponse Mistral OCR, déjà capturée — aucun fichier à préparer.
+          </p>
+          {etatBackend === 'connexion' && (
+            <p className="backend-attente">
+              Réveil du serveur, ça peut prendre jusqu'à une minute — hébergement gratuit.
+            </p>
           )}
-
-          <div className="resultat-etape resultat-preuves">
-            <p className="section-eyebrow">03 — Preuves détaillées</p>
-            <div className="resultat-corps">
-              {apercu && (
-                <img
-                  className="resultat-apercu"
-                  src={apercu}
-                  alt="Aperçu du document analysé"
-                  loading="lazy"
-                />
-              )}
-
-              <div className="resultat-donnees">
-                <table className="comparaison">
-                  <thead>
-                    <tr>
-                      <th>Champ</th>
-                      <th>Extrait du document</th>
-                      <th>Référence attendue</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {CHAMPS_COMPARES.map(({ cle, label }) => (
-                      <tr key={cle}>
-                        <td>{label}</td>
-                        <td>{result.donnees_extraites?.[cle] || '—'}</td>
-                        <td>{result.referentiel?.[cle] || '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {result.motifsLisibles?.length > 0 && (
-                  <div className="motifs">
-                    <h3>Motifs</h3>
-                    <ul>
-                      {result.motifsLisibles.map((motif) => (
-                        <li key={motif}>{motif}</li>
-                      ))}
-                    </ul>
-                  </div>
+          {etatBackend === 'indisponible' && (
+            <p className="backend-attente backend-attente-erreur">
+              Le service est actuellement indisponible. Réessayez dans quelques instants.
+            </p>
+          )}
+          <div className="scenarios-boutons">
+            {scenarios.map((scenario) => (
+              <button
+                key={scenario.id}
+                type="button"
+                disabled={etatBackend !== 'pret'}
+                className={`scenario-bouton ${scenarioActif === scenario.id ? 'is-actif' : ''}`}
+                onClick={() => lancerScenario(scenario.id)}
+              >
+                {scenarioActif === scenario.id && (
+                  <span className="scenario-check" aria-hidden="true">✓</span>
                 )}
+                {scenario.id === SCENARIO_RECOMMANDE && (
+                  <span className="scenario-recommande">Commencer ici</span>
+                )}
+                <span
+                  className={`scenario-puce puce-${CATEGORIE_SCENARIO[scenario.id] ?? 'neutral'}`}
+                  aria-hidden="true"
+                ></span>
+                <span className="scenario-texte">
+                  <span className="scenario-label">{scenario.label}</span>
+                  <span className="scenario-desc">{DESCRIPTION_SCENARIO[scenario.id]}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {erreur && <p className="erreur">{erreur}</p>}
+
+        {result && (
+          <div className={`resultat statut-${statutClasse}`}>
+            <div className="resultat-etape resultat-verdict">
+              <p className="section-eyebrow">01 — Verdict</p>
+              <StatutBadge statut={result.statut} />
+            </div>
+
+            {result.enseignement && (
+              <div className="resultat-etape resultat-pourquoi">
+                <p className="section-eyebrow">02 — Pourquoi</p>
+                <p className="verdict-texte">{result.enseignement}</p>
+              </div>
+            )}
+
+            <div className="resultat-etape resultat-preuves">
+              <p className="section-eyebrow">03 — Preuves détaillées</p>
+              <div className="resultat-corps">
+                {apercu && (
+                  <img
+                    className="resultat-apercu"
+                    src={apercu}
+                    alt="Aperçu du document analysé"
+                    loading="lazy"
+                  />
+                )}
+
+                <div className="resultat-donnees">
+                  <table className="comparaison">
+                    <thead>
+                      <tr>
+                        <th>Champ</th>
+                        <th>Extrait du document</th>
+                        <th>Référence attendue</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {CHAMPS_COMPARES.map(({ cle, label }) => (
+                        <tr key={cle}>
+                          <td>{label}</td>
+                          <td>{result.donnees_extraites?.[cle] || '—'}</td>
+                          <td>{result.referentiel?.[cle] || '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  {result.motifsLisibles?.length > 0 && (
+                    <div className="motifs">
+                      <h3>Motifs</h3>
+                      <ul>
+                        {result.motifsLisibles.map((motif) => (
+                          <li key={motif}>{motif}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="enseignements">
-        <p className="section-eyebrow">Enseignements</p>
-        <h2>Principes de conception</h2>
-        <div className="enseignements-grille">
-          {ENSEIGNEMENTS.map((texte, index) => (
-            <div className="enseignement-carte" key={texte}>
-              <span className="enseignement-num">{String(index + 1).padStart(2, '0')}</span>
-              <p>{texte}</p>
-            </div>
-          ))}
+        <div className="enseignements">
+          <p className="section-eyebrow">Enseignements</p>
+          <h2>Principes de conception</h2>
+          <div className="enseignements-grille">
+            {ENSEIGNEMENTS.map((texte, index) => (
+              <div className="enseignement-carte" key={texte}>
+                <span className="enseignement-num">{String(index + 1).padStart(2, '0')}</span>
+                <p>{texte}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <details className="upload-libre">
-        <summary>Tester avec votre propre document</summary>
-        <p className="avertissement">
-          ⚠️ N'utilisez jamais une vraie pièce d'identité. Testez uniquement avec un document
-          fictif ou un spécimen de démonstration —{' '}
-          <a href={`${GITHUB_URL}/tree/main/frontend/public/specimens`} target="_blank" rel="noreferrer">
-            des exemples sont disponibles ici
-          </a>.
-        </p>
-        <form onSubmit={handleSubmit}>
-          <label className="fichier-label">
-            <input
-              type="file"
-              className="fichier-input"
-              onChange={(event) => setFile(event.target.files[0])}
-            />
-            <span>{file ? file.name : 'Choisir un fichier'}</span>
-          </label>
-          <button type="submit" className="fichier-analyser">Analyser</button>
-        </form>
-        {erreur && <p className="erreur">{erreur}</p>}
-      </details>
+        <details className="upload-libre">
+          <summary>Tester avec votre propre document</summary>
+          <p className="avertissement">
+            ⚠️ N'utilisez jamais une vraie pièce d'identité. Testez uniquement avec un document
+            fictif ou un spécimen de démonstration —{' '}
+            <a href={`${GITHUB_URL}/tree/main/frontend/public/specimens`} target="_blank" rel="noreferrer">
+              des exemples sont disponibles ici
+            </a>.
+          </p>
+          <form onSubmit={handleSubmit}>
+            <label className="fichier-label">
+              <input
+                type="file"
+                className="fichier-input"
+                onChange={(event) => setFile(event.target.files[0])}
+              />
+              <span>{file ? file.name : 'Choisir un fichier'}</span>
+            </label>
+            <button type="submit" className="fichier-analyser">Analyser</button>
+          </form>
+        </details>
 
-      <footer className="a-propos">
-        <p className="section-eyebrow">À propos de ce projet</p>
-        <p className="a-propos-texte">
-          Projet personnel réalisé dans le cadre de ma reconversion vers les métiers de l'IA.
-        </p>
-        <p className="a-propos-texte">
-          À travers ce cas d'usage documentaire, j'ai cherché à explorer une question simple :
-        </p>
-        <p className="a-propos-question">
-          Comment intégrer une IA dans un processus métier tout en conservant une décision
-          explicable, traçable et gouvernable&nbsp;?
-        </p>
-        <div className="pied-de-page">
-          <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
-          <span className="pied-de-page-separateur" aria-hidden="true">·</span>
-          <a href={LINKEDIN_URL} target="_blank" rel="noreferrer">LinkedIn</a>
-        </div>
-      </footer>
-    </section>
+        <footer className="a-propos">
+          <p className="section-eyebrow">À propos de ce projet</p>
+          <p className="a-propos-texte">
+            Projet personnel réalisé dans le cadre de ma reconversion vers les métiers de l'IA.
+          </p>
+          <p className="a-propos-texte">
+            À travers ce cas d'usage documentaire, j'ai cherché à explorer une question simple :
+          </p>
+          <p className="a-propos-question">
+            Comment intégrer une IA dans un processus métier tout en conservant une décision
+            explicable, traçable et gouvernable&nbsp;?
+          </p>
+          <div className="pied-de-page">
+            <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
+            <span className="pied-de-page-separateur" aria-hidden="true">·</span>
+            <a href={LINKEDIN_URL} target="_blank" rel="noreferrer">LinkedIn</a>
+          </div>
+        </footer>
+      </section>
+    </>
   )
 }
 
