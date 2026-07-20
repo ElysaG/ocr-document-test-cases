@@ -7,11 +7,13 @@ Ce n'est pas une démo OCR. C'est une démonstration de séparation entre extrac
 
 ## Démonstration
 
-![Capture de l'application](./docs/screenshot.png) 
+🔗 **Démo en ligne** : [ocr-tests-frontend.onrender.com](https://ocr-tests-frontend.onrender.com/)
 
-🔗 **Démo en ligne** : [\[(https://ocr-tests-frontend.onrender.com/)\]]
+![Vue d'ensemble : le problème et le pipeline extraction → décision](./docs/apercu-intro.jpg)
 
-L'application est conçue pour se comprendre seule, en moins de deux minutes, sans lecture préalable : un bandeau d'introduction, un encart pédagogique propre à chaque scénario, et un accordéon "Comment ça marche ?" pour qui veut aller plus loin. Ce README complète la démo, il n'est pas nécessaire pour la comprendre.
+![Un scénario capturé, du verdict aux preuves détaillées](./docs/apercu-resultat.jpg)
+
+L'application est conçue pour se comprendre seule, en moins de deux minutes, sans lecture préalable : un problème posé d'emblée, un pipeline visible, des scénarios réels à un clic, et un encart pédagogique propre à chaque résultat. Ce README complète la démo, il n'est pas nécessaire pour la comprendre.
 
 ## Le problème
 
